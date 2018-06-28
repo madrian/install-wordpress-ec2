@@ -1,0 +1,28 @@
+#!/bin/bash
+yum update -y
+yum install httpd -y
+yum install php php-mysql -y
+yum install mysql-server -y
+service mysqld start
+mysqladmin -uroot create blog
+
+# download and install wordpress
+wget -O /tmp/wordpress.tar.gz https://wordpress.org/latest.tar.gz
+cd /var/www/html
+tar zxvf /tmp/wordpress.tar.gz
+chown -R apache:apache /var/www
+
+# change wp config
+# TODO secure the database
+mv wordpress blog
+cd blog
+cp wp-config-sample.php wp-config.php
+sed -i "s/database_name_here/blog/" wp-config.php
+sed -i "s/username_here/root/" wp-config.php
+sed -i "s/password_here//" wp-config.php
+
+service httpd start
+chkconfig on
+
+# clean-up
+rm -f /tmp/wordpress.tar.gz
