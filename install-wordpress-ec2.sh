@@ -3,9 +3,29 @@
 # This script installs WordPress to a new AWS EC2 instance.
 #
 # 
+# Author: Adrian
+# GitHub: https://github.com/madrian/install-wordpress-ec2 
 ###############################################################################
 
-if [ $# -ne 1 ];then
+wait_for_server() {
+    for i in `seq 1 1000`;
+    do
+        http_code=`curl $1 -w "%{http_code}" -o /dev/null -s -L`
+        if [ $http_code -eq 200 ]; then
+            echo " [OK]"
+            return 0
+        else
+            echo -n "...... "
+            sleep 3
+        fi
+    done
+    # just in case after 3000 secs, the page is still not loading
+    echo -e "\nSomething went wrong.\n\
+Log-in to the instance and check /var/log/cloud-init-output.log"
+    exit 1
+}
+
+if [ $# -ne 1 ]; then
     echo "Usage: `basename $0` keyName"
     exit 1
 fi
@@ -14,7 +34,7 @@ fi
 key_name=`aws ec2 describe-key-pairs --key-names $1 \
     --query 'KeyPairs[0].KeyName' --output text`
 ret=$?
-if [ $ret -ne 0 ];then
+if [ $ret -ne 0 ]; then
     echo "KeyName $1 not found."
     exit 1
 else
@@ -27,7 +47,7 @@ security_group_id=`aws ec2 describe-security-groups \
     --group-names $security_group_name \
     --query 'SecurityGroups[0].GroupId' --output text 2>/dev/null`
 ret=$?
-if [ $ret -ne 0 ];then
+if [ $ret -ne 0 ]; then
     echo "Creating security group $security_group_name ..."
     security_group_id=`aws ec2 create-security-group \
         --group-name $security_group_name \
@@ -49,13 +69,23 @@ instance_id=`aws ec2 run-instances --image-id ami-de90a5a2 \
     --key-name $key_name --security-group-ids $security_group_id \
     --query 'Instances[0].InstanceId' --output text \
     --user-data file://wp-userdata.txt`
-echo "instanceId=$instance_id"
 
-# wait for the instance to be in ok status
-echo "Installing WordPress on the EC2 instance, this might take a few minutes ..."
-aws ec2 wait instance-status-ok --instance-id $instance_id
+# wait for the instance to be running
+aws ec2 wait instance-running --instance-id $instance_id
+ret=$?
+if [ $ret -ne 0 ]; then
+    echo "Instance creation failed."
+    exit 1
+fi
+echo "Instance created and running."
+echo "> instanceId=$instance_id"
 
 instance_url=`aws ec2 describe-instances --instance-id $instance_id \
     --query 'Reservations[0].Instances[0].PublicDnsName' --output text`
+blog_url=$instance_url/blog
+
+echo "Installing WordPress on the EC2 instance, this might take a few minutes ..."
+wait_for_server $blog_url
+
 echo "Your WordPress blog is ready!"
-echo "Go to http://$instance_url/blog"
+echo "Go to http://$blog_url"

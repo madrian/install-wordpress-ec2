@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 yum update -y
 yum install httpd -y
 yum install php php-mysql -y
@@ -17,12 +17,14 @@ chown -R apache:apache /var/www
 mv wordpress blog
 cd blog
 cp wp-config-sample.php wp-config.php
+echo "<?php phpinfo(); ?>" > /var/www/html/phpinfo.php
 sed -i "s/database_name_here/blog/" wp-config.php
 sed -i "s/username_here/root/" wp-config.php
 sed -i "s/password_here//" wp-config.php
 
 service httpd start
-chkconfig on
+chkconfig httpd on
+chkconfig mysqld on
 
 # clean-up
 rm -f /tmp/wordpress.tar.gz
