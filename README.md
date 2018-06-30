@@ -5,14 +5,14 @@ A simple bash script that installs [WordPress][wordpress] on a new EC2 instance.
   * AWS EC2 account
   * [AWS cli][aws-cli] installed
     * with credentials setup
-> e.g.  
-> aws_secret_access_key = abc123  
-> aws_access_key_id = 456789  
-
+        ```properties
+        aws_secret_access_key = abc123
+        aws_access_key_id = 456789
+        ```
     * with region set in the config
-> e.g.  
-> region = ap-southeast-1  
-
+        ```properties
+        region = ap-southeast-1
+        ```
   * Bash shell
   * [jq][jq-download] installed
     * This is needed to parse the json response of AWS cli.
