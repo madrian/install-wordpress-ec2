@@ -8,9 +8,11 @@ A simple bash script that installs [WordPress][wordpress] on a new EC2 instance.
 > e.g.  
 > aws_secret_access_key = abc123  
 > aws_access_key_id = 456789  
+
     * with region set in the config
 > e.g.  
 > region = ap-southeast-1  
+
   * Bash shell
   * [jq][jq-download] installed
     * This is needed to parse the json response of AWS cli.
@@ -36,7 +38,7 @@ Creating the EC2 instance ...
 Instance created and running.
 > instanceId=i-0c2122863cc167f53
 Installing WordPress on the EC2 instance, this might take a few minutes ...
-...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ...... ......  [OK]
+...... ...... ...... ...... ...... ...... [OK]
 Your WordPress blog is ready!
 Go to http://ec2-54-179-135-255.ap-southeast-1.compute.amazonaws.com/blog
 ```
